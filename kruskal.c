@@ -2,8 +2,8 @@
 #include <stdlib.h>
 
 /*
-* O grafo foi representado como uma matriz de adjacência
-* Uma estrutura auxiliar foi usada para ordenar as arestas
+* O grafo foi representado como uma matriz de adjacência por praticidade.
+* Uma estrutura auxiliar foi usada para ordenar as arestas.
 */
 
 #define INFINITO 9999 // usado para definir o custo de uma aresta como infinito
@@ -63,18 +63,31 @@ void adicionar_aresta(int** grafo, aresta** arestas, int tamanho, int u, int v, 
 int** kruskal(int** grafo, aresta** e, int tamanho);
 
 int main(){
-    int tamanho = 10;
+    int tamanho = 4;
+    int i, j;
     int** grafo = criar_grafo(tamanho);
+    int** T;
     aresta** arestas = criar_arestas(tamanho);
 
-    adicionar_aresta(grafo, arestas, tamanho, 0, 1, 10);
-    adicionar_aresta(grafo, arestas, tamanho, 5, 6, 10);
-    mergesort(0, tamanho*tamanho, arestas);
-
-    printf("%d\n ", grafo[0][1]);
-    printf("%d %d %d\n", arestas[0]->u, arestas[0]->v, arestas[0]->custo);
-    printf("%d %d %d\n", arestas[1]->u, arestas[1]->v, arestas[1]->custo);
+    adicionar_aresta(grafo, arestas, tamanho, 0, 1, 1);
+    adicionar_aresta(grafo, arestas, tamanho, 0, 2, 1);
+    adicionar_aresta(grafo, arestas, tamanho, 0, 3, 5);
+    adicionar_aresta(grafo, arestas, tamanho, 1, 2, 1);
+    adicionar_aresta(grafo, arestas, tamanho, 1, 3, 3);
+    adicionar_aresta(grafo, arestas, tamanho, 3, 2, 2);
     
+
+    /*for(i = 0; i < tamanho*tamanho; i++) {
+        printf("%d -> %d : %d\n", arestas[i]->u, arestas[i]->v, arestas[i]->custo);
+    }*/
+    T = kruskal(grafo, arestas, tamanho);
+    printf("Matriz de adjacência da arvore minima:\n");
+    for(i = 0; i < tamanho; i++) {
+        for(j = 0; j < tamanho; j++){
+            printf("%d ", T[i][j]);
+        }
+        printf("\n");
+    }
     return 0;
 }
 
@@ -100,7 +113,6 @@ void union_(int* pai, int* rank, int x, int y) {
         if(rank[x] == rank[y]) {
             rank[x]++;
         }
-       
     }
     else {
         pai[x] = y;
@@ -159,7 +171,7 @@ aresta** criar_arestas(int tamanho) {
     aresta** a = (aresta**) malloc(tamanho*tamanho*sizeof(aresta*));
     int t = tamanho*tamanho;
     int i;
-    
+    //as arestas já são alocadas para não atrapalhar o mergesort
     for (i = 0; i < t; i++) {
         a[i] = (aresta*) malloc(sizeof(aresta));
         a[i]->u = N_VERTICE;
@@ -184,6 +196,8 @@ int** kruskal(int** grafo, aresta** e, int tamanho) {
     int t = tamanho * tamanho;
     int** T =  criar_grafo(tamanho);
 
+    mergesort(0, tamanho*tamanho, e);
+
     for(i = 0; i < tamanho; i++) {
         make_set(pai, rank, i);
     }
@@ -194,9 +208,11 @@ int** kruskal(int** grafo, aresta** e, int tamanho) {
         int u = e[i]->u;
         int v = e[i]->v;
         int custo = e[i]->custo;
-        if( find(pai, u) != find(pai, v) ) {
+        int pai_u = find(pai, u);
+        int pai_v = find(pai, v);
+        if( pai_u != pai_v) {
             T[u][v] = custo;
-            union_(pai, rank, u, v);
+            union_(pai, rank, pai_u, pai_v);
         }
     }
     return T;
